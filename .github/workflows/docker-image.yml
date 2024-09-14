@@ -8,11 +8,6 @@ on:
 
 env:
   DB_URI_APP: ${{secrets.DB_URI_APP}}
-  
-  REDIS_PORT: ${{secrets.REDIS_PORT}}
-  REDIS_URI: ${{secrets.REDIS_URI}}
-  REDIS_USERNAME: ${{secrets.REDIS_USERNAME}}
-  REDIS_PASSWORD: ${{secrets.REDIS_PASSWORD}}
 
 jobs:
 
