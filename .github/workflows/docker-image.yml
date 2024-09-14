@@ -1,0 +1,32 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  DB_URI_APP: ${{secrets.DB_URI_APP}}
+  
+  REDIS_PORT: ${{secrets.REDIS_PORT}}
+  REDIS_URI: ${{secrets.REDIS_URI}}
+  REDIS_USERNAME: ${{secrets.REDIS_USERNAME}}
+  REDIS_PASSWORD: ${{secrets.REDIS_PASSWORD}}
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build the Docker image
+      run: docker build -t guruji-astro-worker .
+    - name: tagging docker image
+      run: docker tag guruji-astro-worker ritesh001/guruji-astro-worker
+    - name: docker login
+      run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+    - name: push docker image
+      run: docker push ritesh001/guruji-astro-worker
