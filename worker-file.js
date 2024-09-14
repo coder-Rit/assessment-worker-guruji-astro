@@ -2,29 +2,30 @@ import { Queue, Worker } from 'bullmq';
 import { applyToJob } from './controller/jobController.js';
 import secondaryConnection from './config/db.second.connection.js';
 import dotenv from "dotenv";
-// Replace 'my-queue' with your actual queue name
 import express from 'express'
 import { io } from 'socket.io-client';
 
 const app = express();
-// Replace 'localhost' and '6379' with your actual host and port
 
 dotenv.config({ path: "./config/config.env" });
 
 
 
-export const socket = io('http://localhost:4001/'); // Connect to Server 1
+export const socket = io('http://localhost:4001/'); // Connect to primary server
 
 
 
 const port = process.env.PORT || 5000;
 
+
+// server
 app.listen(port, async () => {
     console.log(`worker is running at http://localhost:${port}`);
 
     await secondaryConnection(process.env.DB_URI_APP, {});
 
 });
+
 
 
 socket.on('connect', () => {
@@ -44,35 +45,25 @@ const adapter = {
     }
 };
 
-const queueName = 'worker_1_clients';
+const queueName = 'worker_1_clients'; 
 
-// Create a worker
+// processing active clients from queue
 const worker = new Worker(queueName, async (job) => {
-    // Access job data
     try {
-        console.log(`job: ${job.name}`);
+        // building queue name
         const clientQueueName = `queue_${JSON.parse(job.name)}`
 
-        console.log(clientQueueName);
-        // const dynamicJob = await dynamicQueue.data;
+        // worker for processing queue request;
         const subworker = new Worker(clientQueueName, async (job2) => {
-            // Access job data
-            console.log(`job: ${JSON.parse(job2.name)}`);
+            // hitting api
             const res = await applyToJob(JSON.parse(job2.name), JSON.parse(job.name));
  
         }, adapter);
 
     } catch (error) {
         console.log(error);
-
     }
 
 }, adapter);
 
-// Start the worker
-
-// console.log("worker started");
-// // worker.run();
-
-// // worker.close();
-// console.log("worker closed");
+ 
